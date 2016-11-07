@@ -1,3 +1,5 @@
+// TODO: change tone
+// undone
 const int buzz = 9;
 const int freq[] = {523,587,659,698,784,880,988};
 const int sharpfreq[] = {554,622,0,740,831,932,0};
