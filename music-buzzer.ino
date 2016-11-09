@@ -1,4 +1,5 @@
 // TODO: change tone
+//       melody and harmony
 // undone
 const int buzz = 9;
 const int freq[] = {523,587,659,698,784,880,988};
