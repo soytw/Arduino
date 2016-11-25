@@ -75,7 +75,7 @@ void loop() {
     if (Serial.available()) {
         musicstr = Serial.readString();
     }
-    musiclen = fromstr(musicstr, music);
+    musiclen = fromstr(musicstr, music, 2);
     // int curMillis = millis();
     // int i = (curMillis - prevMillis) * ;
     // prevMillis = curMillis;
