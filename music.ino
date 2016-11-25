@@ -1,76 +1,71 @@
 // TODO: change tone
 //       melody and harmony
-// done
+
 const int buzz = 9;
 const int freq[] = {523,587,659,698,784,880,988};
 const int sharpfreq[] = {554,622,0,740,831,932,0};
 const int highfreq[] = {1047,1175,1319,1397,1568,1760,1976};
 const int highsharpfreq[] = {1109,1245,0,1480,1661,1865,0};
+
 struct Note {
     int pitch, value;
-} nt[100];
-double bpm = 240, sum = 0;
-String musicin = "";
+};
+
+int bpm = 240;
+// String musicstr = "6-234#^56-2-2-7-5671#^2^-2-2-5-6#^54#^34#^-54323-43#^212";
+String musicstr = "5-12345-1-1-6-45671^-1-1-4-54323-43211";
+Note music[100];
+int musiclen = 0;
 // #: sharp
 // ^: high 8 degree
 // -: lengthen
-int fromstr(String melody, Note res[]) {
+
+int fromstr(String src, Note res[]) {
     int len = 0;
-    for (int i=0; i<melody.length(); ) {
-        int r = i+1, tm = 1;
-        while ((melody[r] < '0' || melody[r] > '9') && r<melody.length()) r++;
-        bool sharp = false, high = false;
+    for (int i=0; i<src.length(); ) {
+        int r=i+1, tm=1;
+        while ((src[r] < '0' || src[r] > '9') && r<src.length()) r++;
+        bool sharp=false, high=false;
         for (int j=i; j<r; j++) {
-            if (melody[j]=='#')
+            if (src[j]=='#')
                 sharp = true;
-            else if (melody[j]=='^')
+            else if (src[j]=='^')
                 high = true;
-            else if (melody[j]=='-')
+            else if (src[j]=='-')
                 tm++;
         }
+        if (sharp && high)
+            res[len].pitch = highsharpfreq[src[i]-'1'];
+        else if (sharp)
+            res[len].pitch = sharpfreq[src[i]-'1'];
+        else if (high)
+            res[len].pitch = highfreq[src[i]-'1'];
+        else
+            res[len].pitch = freq[src[i]-'1'];
         res[len].value = tm;
-        res[len].pitch = freq[melody[i]-'1'];
+
         i = r;
         len++;
     }
     return len;
-}
-void printdata() {
-    Serial.print("BPM : ");
-    Serial.println(bpm, 2);
-    Serial.print("duration : ");
-    Serial.println(duration/1000, 2);
-    bool no = 0;
-    for ( int i=0; i<musicin.length(); i++ ) {
-        if ( no && musicin[i] >= '0' && musicin[i] <= '9' )
-            Serial.print(" ");
-        else if ( musicin[i] >= '0' && musicin[i] <= '9' )
-            no = 1;
-        Serial.print(musicin[i]);
-    }
-    Serial.print("\n");
 }
 void setup() {
     pinMode(buzz,OUTPUT);
     Serial.begin(9600);
 }
 void loop() {
-    if ( Serial.available() > 0 )
-        musicin += Serial.readString();
-    delay(200);
-    if ( musicin.length() ) {
-        delay(100);
-        int n=fromstr(musicin, nt);
-        for (int i=0; i<n; i++) {
-            double dur = nt[i].value*60000.0/bpm;
-            tone(buzz, nt[i].pitch, dur);
-            delay(dur*1.3);
-            noTone(buzz);
-            duration += dur;
-        }
-        printdata();
-        delay(1000);
-        musicin = "";
+    if (Serial.available()) {
+        musicstr = Serial.readString();
     }
-    delay(500);
+    musiclen = fromstr(musicstr, music);
+    // int curMillis = millis();
+    // int i = (curMillis - prevMillis) * ;
+    // prevMillis = curMillis;
+    for (int i=0; i<musiclen; i++) {
+        double dur = music[i].value*60000.0/bpm;
+        tone(buzz, music[i].pitch, dur);
+        delay(dur*1.3);
+        noTone(buzz);
+    }
+    delay(1000);
 }
