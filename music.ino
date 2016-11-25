@@ -1,49 +1,67 @@
-// TODO: change tone
-//       melody and harmony
+// TODO: melody and harmony
+
+#include <string.h>
+#include <ctype.h>
+#include <math.h>
 
 const int buzz = 9;
-const int freq[] = {523,587,659,698,784,880,988};
-const int sharpfreq[] = {554,622,0,740,831,932,0};
-const int highfreq[] = {1047,1175,1319,1397,1568,1760,1976};
-const int highsharpfreq[] = {1109,1245,0,1480,1661,1865,0};
 
 struct Note {
-    int pitch, value;
+    /**
+     * the pitch should be described in scientific pitch notation
+     * for example, "D5#" of C tone get be described as (2,5,1)
+     * PROPERTIES:
+     *   pitch: 1-7 note pitch in numeric notation
+     *   octave: 0-10
+     *   sharp: sharp if positive, flat if negative
+     *   notelen: note value
+     * METHODS:
+     *   freq(): frequency (Hz) in double type
+     *   duration(bpm): duration (ms)
+     */
+    int pitch, octave, sharp, notelen;
+    double freq() {
+        int mp[] = { 0,60,62,64,65,67,69,71 };
+        double p = mp[pitch] + sharp + (octave - 4) * 12;
+        return pow(2, (p - 69) / 12) * 440;
+    }
+    double duration(int bpm) {
+        return notelen * 60000.0 / bpm;
+    }
 };
 
 int bpm = 240;
-// String musicstr = "6-234#^56-2-2-7-5671#^2^-2-2-5-6#^54#^34#^-54323-43#^212";
-String musicstr = "5-12345-1-1-6-45671^-1-1-4-54323-43211";
+char musicstr[] = "5-1234 5-1-1- 6-4567 1^-1-1- 4-5432 3-4321 2-3217.1-";
 Note music[100];
 int musiclen = 0;
 // #: sharp
-// ^: high 8 degree
+// ^: higher octave
+// .: lower octave
 // -: lengthen
 
-int fromstr(String src, Note res[]) {
+int fromstr(char src[], Note res[], int tone) {
     int len = 0;
-    for (int i=0; i<src.length(); ) {
-        int r=i+1, tm=1;
-        while ((src[r] < '0' || src[r] > '9') && r<src.length()) r++;
-        bool sharp=false, high=false;
-        for (int j=i; j<r; j++) {
-            if (src[j]=='#')
-                sharp = true;
-            else if (src[j]=='^')
-                high = true;
-            else if (src[j]=='-')
-                tm++;
+    for (int i = 0; i<strlen(src); ) {
+        int r = i + 1;
+        while (!isdigit(src[r]) && r<strlen(src))
+            r++;
+        int sharp = tone, octave = 5, notelen = 1;
+        for (int j = i; j<r; j++) {
+            if (src[j] == '#')
+                sharp++;
+            else if (src[j] == 'b')
+                sharp--;
+            else if (src[j] == '^')
+                octave++;
+            else if (src[j] == '.')
+                octave--;
+            else if (src[j] == '-')
+                notelen++;
         }
-        if (sharp && high)
-            res[len].pitch = highsharpfreq[src[i]-'1'];
-        else if (sharp)
-            res[len].pitch = sharpfreq[src[i]-'1'];
-        else if (high)
-            res[len].pitch = highfreq[src[i]-'1'];
-        else
-            res[len].pitch = freq[src[i]-'1'];
-        res[len].value = tm;
-
+        res[len].pitch = src[i] - '0';
+        res[len].octave = octave;
+        res[len].sharp = sharp;
+        res[len].notelen = notelen;
         i = r;
         len++;
     }
@@ -62,9 +80,8 @@ void loop() {
     // int i = (curMillis - prevMillis) * ;
     // prevMillis = curMillis;
     for (int i=0; i<musiclen; i++) {
-        double dur = music[i].value*60000.0/bpm;
-        tone(buzz, music[i].pitch, dur);
-        delay(dur*1.3);
+        tone(buzz, music[i].freq(), music[i].duration());
+        delay(music[i].duration()*1.3);
         noTone(buzz);
     }
     delay(1000);
