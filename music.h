@@ -29,7 +29,7 @@ double duration(int notelen, int bpm) {
     */
     return notelen * 60000.0 / bpm;
 }
-int fromstr(char src[], Note res[], int bpm, int sharp=0) {
+int fromstr(const char src[], Note res[], int bpm, int sharp=0) {
     /**
      * translate numeric music notation into frequency and duration
      * example: 5-1234 5-1-1- 6-4567 1^-1-1- 4-5432 3-4321 2-3217.1-
