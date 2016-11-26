@@ -4,7 +4,7 @@
 #include <ctype.h>
 #include <math.h>
 
-const int buzz = 9;
+const int buzzer = 9;
 
 struct Note {
     /**
@@ -34,41 +34,40 @@ int bpm = 240;
 char musicstr[] = "5-1234 5-1-1- 6-4567 1^-1-1- 4-5432 3-4321 2-3217.1-";
 Note music[100];
 int musiclen = 0;
-// #: sharp
-// ^: higher octave
-// .: lower octave
-// -: lengthen
 
 int fromstr(char src[], Note res[], int tone) {
-    int len = 0;
-    for (int i = 0; i<strlen(src); ) {
-        int r = i + 1;
-        while (!isdigit(src[r]) && r<strlen(src))
-            r++;
-        int sharp = tone, octave = 5, notelen = 1;
-        for (int j = i; j<r; j++) {
-            if (src[j] == '#')
-                sharp++;
-            else if (src[j] == 'b')
-                sharp--;
-            else if (src[j] == '^')
-                octave++;
-            else if (src[j] == '.')
-                octave--;
-            else if (src[j] == '-')
-                notelen++;
+    // #: sharp
+    // b: flat
+    // ^: higher octave
+    // .: lower octave
+    // -: lengthen
+    int srclen = strlen(src);
+    int reslen = 0;
+    for (int i=0; i<srclen; ) {
+        res[reslen].pitch = src[i] - '0';
+        res[reslen].octave = 5;
+        res[reslen].sharp = tone;
+        res[reslen].notelen = 1;
+        i++;
+        while (!isdigit(src[i]) && i<srclen) {
+            if (src[i] == '#')
+                res[reslen].sharp++;
+            else if (src[i] == 'b')
+                res[reslen].sharp--;
+            else if (src[i] == '^')
+                res[reslen].octave++;
+            else if (src[i] == '.')
+                res[reslen].octave--;
+            else if (src[i] == '-')
+                res[reslen].notelen++;
+            i++;
         }
-        res[len].pitch = src[i] - '0';
-        res[len].octave = octave;
-        res[len].sharp = sharp;
-        res[len].notelen = notelen;
-        i = r;
-        len++;
+        reslen++;
     }
-    return len;
+    return reslen;
 }
 void setup() {
-    pinMode(buzz,OUTPUT);
+    pinMode(buzzer,OUTPUT);
     Serial.begin(9600);
 }
 void loop() {
@@ -80,9 +79,9 @@ void loop() {
     // int i = (curMillis - prevMillis) * ;
     // prevMillis = curMillis;
     for (int i=0; i<musiclen; i++) {
-        tone(buzz, music[i].freq(), music[i].duration());
+        tone(buzzer, music[i].freq(), music[i].duration());
         delay(music[i].duration()*1.3);
-        noTone(buzz);
+        noTone(buzzer);
     }
     delay(1000);
 }
