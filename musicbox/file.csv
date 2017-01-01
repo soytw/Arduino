@@ -1,0 +1,12 @@
+frequency,extension filename,can play,sound,good
+16MHz,AFS,F,,
+16MHz,AFM,T,沙、爆炸,T
+16MHz,BFM,F,,
+16MHz,BHM,F,,
+16MHz,BHS,F,,
+16MHz,AHM,T,高音、快,
+16MHz,AHS,T,沙,T
+8MHz,AFS,T,沙,T
+8MHz,AHM,T,高音、超快,
+8MHz,AHS,T,快,
+8MHz,AFM,T,快,

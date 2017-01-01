@@ -6,6 +6,7 @@
 
 namespace Music {
     struct Note {
+        int num;
         double freq, dur;
     };
     double frequency(int pitch, int octave, int sharp=0) {
@@ -66,6 +67,7 @@ namespace Music {
                     notelen++;
                 i++;
             }
+            res[reslen].pitch = pitch;
             res[reslen].freq = frequency(pitch, octave, sharp);
             res[reslen].dur = duration(notelen, bpm);
             reslen++;
