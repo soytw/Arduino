@@ -1,10 +1,11 @@
 #!/bin/bash
 mkdir converted-sound 2> /dev/null
 for dir in $(ls "sound"); do
-	prefix="${dir:0:3}"
+	prefix="${dir:0:8}"
 	for src in $(ls "sound/$dir"); do
 		base="${src:0:-4}"
-		echo "sound/$dir/$src -> converted-sound/$prefix-$base.afm"
-		tools/sox_win/sox "sound/$dir/$src" --norm=-1 -e unsigned-integer -b 8 -r 62500 -c 1 -t raw "converted-sound/$prefix-$base.afm"
+		echo "sound/$dir/$src -> converted-sound/$prefix/$base.wav"
+		mkdir "converted-sound/$prefix" 2> /dev/null
+		ffmpeg -i "sound/$dir/$src" -codec pcm_u8 -ar 32000 -ac 1 "converted-sound/$prefix/$base.wav" > /dev/null
 	done
 done
