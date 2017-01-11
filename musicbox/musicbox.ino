@@ -18,7 +18,7 @@ byte rowPin[4] = {2, 3, 5, 6};
 byte colPin[4] = {A0, A1, A2, A3};
 Keypad keypad = Keypad(makeKeymap(keys), rowPin, colPin, 4, 4);
 
-#define MAX_RECORD_LEN 30
+#define MAX_RECORD_LEN 10
 struct Record {
   byte key;
   unsigned int dur;
@@ -63,9 +63,11 @@ void printDir(File dir, int numTabs=0) {
 
 void playPianoKey(byte key) {
   String notename[] = {"", "C5", "C5S", "D5", "D5S", "E5", "F5", "F5S", "G5", "G5S", "A5", "A5S", "B5"};
-  String type = "violin";
+  String type = "piano";
   String filename = type + "/" + notename[key] + ".wav";
   Serial.println(filename);
+  if (SD.exists(filename)) Serial.println("found");
+  else Serial.println("no file");
   audio.play(filename.c_str());
 }
 
@@ -105,7 +107,13 @@ void onclick(byte key) {
       recordKey(key, millis()-tm);
     } else if (mode == FREE_PLAY) {
       playPianoKey(key);
-      while (keypad.getState() == HOLD);
+      delay(500);
+      if (keypad.getState() == HOLD)
+        Serial.println("HOLD");
+      else if (keypad.getState() == PRESSED)
+        Serial.println("PRESSED");
+      else if (keypad.getState() == RELEASED)
+        Serial.println("RELEASED");
       audio.pause();
     }
   } else if (key == 13) {
@@ -144,12 +152,18 @@ void setup() {
     Serial.print("SD fail");
   }
 
-  keypad.addEventListener(onclick);
+//  keypad.setDebounceTime(250);
+//  keypad.setHoldTime(500);
+//  keypad.addEventListener(onclick);
+  
   audio.speakerPin = SPEAKER_PIN;
   pinMode(VOL_PIN, INPUT);
   pinMode(SPEAKER_PIN, OUTPUT);
+  mode = FREE_PLAY;
 }
 
 void loop() {
   audio.setVolume(map(analogRead(VOL_PIN), 0, 1023, 0, 7));
+  byte key = keypad.getKey();
+  if (key) onclick(key);
 }
